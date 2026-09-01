@@ -10,7 +10,6 @@ import time
 import uuid
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import List, Optional
 
 
 @dataclass
@@ -19,7 +18,7 @@ class AuditEntry:
     redacted_input: str
     redacted_output: str
     allowed: bool
-    policy_reason: Optional[str]
+    policy_reason: str | None
     estimated_cost_usd: float
     call_id: str = field(default_factory=lambda: uuid.uuid4().hex)
     timestamp: float = field(default_factory=time.time)
@@ -29,9 +28,9 @@ class AuditLogger:
     """Keeps entries in memory (for inspection/tests) and optionally
     appends each one as a JSON line to `log_path`."""
 
-    def __init__(self, log_path: Optional[Path] = None) -> None:
+    def __init__(self, log_path: Path | None = None) -> None:
         self.log_path = Path(log_path) if log_path else None
-        self.entries: List[AuditEntry] = []
+        self.entries: list[AuditEntry] = []
 
     def log(self, entry: AuditEntry) -> None:
         self.entries.append(entry)

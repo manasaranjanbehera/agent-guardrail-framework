@@ -1,7 +1,6 @@
 import pytest
-
 from src.audit_log import AuditLogger
-from src.cost_tracker import CostTracker
+from src.cost_tracker import BudgetExceededError, CostTracker
 from src.guardrail import GuardedAgent, PolicyViolationError
 from src.policy import PolicyEngine
 
@@ -62,7 +61,7 @@ def test_over_budget_actor_is_blocked_before_calling_the_model():
     tracker = CostTracker(budgets={"alice": 0.0000001})
     agent = GuardedAgent(call_fn=tracking_agent, cost_tracker=tracker)
 
-    with pytest.raises(Exception):
+    with pytest.raises(BudgetExceededError):
         agent.invoke("hello", actor="alice")
 
     assert calls == []
@@ -95,3 +94,35 @@ def test_audit_log_writes_jsonl_to_disk(tmp_path):
     import json
     entry = json.loads(lines[0])
     assert entry["actor"] == "bob"
+
+
+def test_actual_cost_over_budget_blocks_output_even_though_prompt_looked_affordable():
+    # The prompt is short (cheap estimate), but the response is huge --
+    # the pre-call check passes, only the post-call recheck should catch it.
+    def expensive_agent(prompt):
+        return "x" * 100_000
+
+    tracker = CostTracker(budgets={"alice": 0.01})
+    logger = AuditLogger()
+    agent = GuardedAgent(call_fn=expensive_agent, cost_tracker=tracker, audit_logger=logger)
+
+    with pytest.raises(BudgetExceededError):
+        agent.invoke("short prompt", actor="alice")
+
+    # the model WAS called and the spend IS recorded, even though blocked
+    assert tracker.spend_so_far("alice") > 0.01
+    assert logger.entries[-1].allowed is False
+    assert logger.entries[-1].redacted_output == "[BLOCKED OUTPUT]"
+
+
+def test_actual_cost_within_budget_succeeds_normally():
+    def cheap_agent(prompt):
+        return "short reply"
+
+    tracker = CostTracker(budgets={"alice": 1.0})
+    agent = GuardedAgent(call_fn=cheap_agent, cost_tracker=tracker)
+
+    result = agent.invoke("short prompt", actor="alice")
+
+    assert result.output == "short reply"
+    assert tracker.spend_so_far("alice") > 0

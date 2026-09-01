@@ -1,0 +1,50 @@
+[project]
+name = "agent-guardrail-framework"
+version = "0.1.0"
+description = "Model-agnostic guardrail layer for policy enforcement, PII-redacted audit logging, and per-actor cost/budget control"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [
+    { name = "Manasa Ranjan Behera", email = "manasabehera5901@gmail.com" },
+]
+keywords = ["agents", "guardrails", "policy", "audit", "pii", "llm", "budget"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Security",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/manasaranjanbehera/agent-guardrail-framework"
+Repository = "https://github.com/manasaranjanbehera/agent-guardrail-framework"
+Issues = "https://github.com/manasaranjanbehera/agent-guardrail-framework/issues"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.9",
+]
+
+[tool.uv]
+package = false
+default-groups = ["dev"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+src = ["src", "tests", "examples"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "C4"]

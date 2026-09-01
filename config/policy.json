@@ -1,0 +1,15 @@
+{
+  "version": "1.0",
+  "updated": "2026-09-01",
+  "description": "Restricted actions for the AI support-ticket triage agent. An AI agent may draft a response or summarize a ticket, but must never appear to authorize or execute these actions itself -- they require a human agent to act. Edit this list without touching application code; the compliance/support-ops team owns it.",
+  "denylist": [
+    "wire transfer",
+    "close my account",
+    "close the account",
+    "unlock my card",
+    "reissue my card",
+    "override the fraud hold",
+    "waive the overdraft fee",
+    "change the account owner"
+  ]
+}
